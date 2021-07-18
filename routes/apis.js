@@ -47,6 +47,10 @@ Router.get("/availableslots/:startDate/:endDate", (req, res) => {
   );
 });
 
+Router.get("/", (req, res) => {
+  res.send("Welcome to Book my office slot application");
+});
+
 //get all the users booked for a date
 Router.get("/bookedusers/:date", (req, res) => {
   mysqlConnection.query(
