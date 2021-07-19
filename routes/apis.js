@@ -35,7 +35,7 @@ Router.get("/:id", (req, res) => {
 //get all the available slots for a month
 Router.get("/availableslots/:startDate/:endDate", (req, res) => {
   mysqlConnection.query(
-    "Select * from bookmyslot.slots_availability WHERE date BETWEEN ? AND ?",
+    "Select * from slots_availability WHERE date BETWEEN ? AND ?",
     [req.params.startDate, req.params.endDate],
     (err, rows, fields) => {
       if (!err) {
@@ -54,7 +54,7 @@ Router.get("/", (req, res) => {
 //get all the users booked for a date
 Router.get("/bookedusers/:date", (req, res) => {
   mysqlConnection.query(
-    "SELECT * from bookmyslot.bookings WHERE bookingdate = ? AND status = ?",
+    "SELECT * from bookings WHERE bookingdate = ? AND status = ?",
     [req.params.date, "Confirmed"],
     (err, rows, fields) => {
       if (!err) {
@@ -69,7 +69,7 @@ Router.get("/bookedusers/:date", (req, res) => {
 //get all the booked slots for a user
 Router.get("/bookedfor/:email", (req, res) => {
   mysqlConnection.query(
-    "SELECT * from bookmyslot.bookings WHERE email = ? AND status = ?",
+    "SELECT * from bookings WHERE email = ? AND status = ?",
     [req.params.email, "Confirmed"],
     (err, rows, fields) => {
       if (!err) {
@@ -84,7 +84,7 @@ Router.get("/bookedfor/:email", (req, res) => {
 //get all the present and future confirmed booking details
 Router.get("/bookings/:todaysdate", (req, res) => {
   mysqlConnection.query(
-    "SELECT * from bookmyslot.bookings WHERE status = ? AND bookingdate >= ?",
+    "SELECT * from bookings WHERE status = ? AND bookingdate >= ?",
     ["Confirmed", req.params.todaysdate],
     (err, rows, fields) => {
       if (!err) {
@@ -99,12 +99,12 @@ Router.get("/bookings/:todaysdate", (req, res) => {
 //cancel slot
 Router.post("/cancelslot", (req, res) => {
   mysqlConnection.query(
-    "UPDATE bookmyslot.bookings SET status = ? WHERE email = ? AND bookingdate = ?",
+    "UPDATE bookings SET status = ? WHERE email = ? AND bookingdate = ?",
     ["Cancelled", req.body.email, req.body.bookingdate],
     (err, rows, fields) => {
       if (!err) {
         mysqlConnection.query(
-          "UPDATE bookmyslot.slots_availability SET available_slots = available_slots + 1 WHERE date = ?",
+          "UPDATE slots_availability SET available_slots = available_slots + 1 WHERE date = ?",
           [req.body.bookingdate],
           (err1, rows1, fields1) => {
             if (!err1) {
@@ -141,7 +141,7 @@ Router.delete("/delete/:id", (req, res) => {
 //CREATE
 Router.post("/add/:name/:age", (req, res) => {
   mysqlConnection.query(
-    "INSERT INTO bookmyslot.bookings (name, age) VALUES (?,?)",
+    "INSERT INTO bookings (name, age) VALUES (?,?)",
     [req.params.name, req.params.age],
     (err, rows, fields) => {
       if (!err) {
@@ -158,7 +158,7 @@ Router.post("/add/:name/:age", (req, res) => {
 // UPDATE `firstbackend`.`bookings` SET `name` = 'Tia Agarwal', `age` = '12' WHERE (`id` = '3');
 Router.put("/update/:id", (req, res) => {
   mysqlConnection.query(
-    "UPDATE bookmyslot.bookings SET name=?, age=? WHERE (id = ?)",
+    "UPDATE bookings SET name=?, age=? WHERE (id = ?)",
     [req.body.name, req.body.age, req.params.id],
     (err, rows, fields) => {
       if (!err) {
@@ -173,12 +173,12 @@ Router.put("/update/:id", (req, res) => {
 //cancel booking by admin
 Router.get("/cancelbooking/:id/:reason/:date", (req, res) => {
   mysqlConnection.query(
-    "UPDATE bookmyslot.bookings SET status = ?, reasonforcancel = ? WHERE id = ?",
+    "UPDATE bookings SET status = ?, reasonforcancel = ? WHERE id = ?",
     ["Cancelled", req.params.reason, req.params.id],
     (err, rows, fields) => {
       if (!err) {
         mysqlConnection.query(
-          "UPDATE bookmyslot.slots_availability SET available_slots = available_slots + 1 WHERE date = ?",
+          "UPDATE slots_availability SET available_slots = available_slots + 1 WHERE date = ?",
           [req.params.date],
           (err1, rows, fields) => {
             if (!err1) {
@@ -201,7 +201,7 @@ Router.get("/cancelbooking/:id/:reason/:date", (req, res) => {
 //INSERT
 Router.put("/bookslot", (req, res) => {
   mysqlConnection.query(
-    "INSERT INTO bookmyslot.bookings (name, email, bookingdate, remark, status) VALUES (?,?,?,?,?)",
+    "INSERT INTO bookings (name, email, bookingdate, remark, status) VALUES (?,?,?,?,?)",
     [
       req.body.name,
       req.body.email,
@@ -212,7 +212,7 @@ Router.put("/bookslot", (req, res) => {
     (err, rows, fields) => {
       if (!err) {
         mysqlConnection.query(
-          "SELECT * from bookmyslot.slots_availability WHERE date = ?",
+          "SELECT * from slots_availability WHERE date = ?",
           [req.body.bookingdate],
           (err1, rows1, fields1) => {
             if (!err1) {
@@ -220,7 +220,7 @@ Router.put("/bookslot", (req, res) => {
               if (rows1.length == 0) {
                 //when we need to insert available slots
                 mysqlConnection.query(
-                  "INSERT INTO bookmyslot.slots_availability (date, available_slots) VALUES (?,?)",
+                  "INSERT INTO slots_availability (date, available_slots) VALUES (?,?)",
                   [req.body.bookingdate, totalSlots - 1],
                   (err2, rows2, fields2) => {
                     if (!err2) {
@@ -233,7 +233,7 @@ Router.put("/bookslot", (req, res) => {
               } else {
                 //when we need to update available slots
                 mysqlConnection.query(
-                  "UPDATE bookmyslot.slots_availability SET available_slots=available_slots-1 WHERE (date = ?)",
+                  "UPDATE slots_availability SET available_slots=available_slots-1 WHERE (date = ?)",
                   [req.body.bookingdate],
                   (err3, rows3, fields3) => {
                     if (!err3) {
